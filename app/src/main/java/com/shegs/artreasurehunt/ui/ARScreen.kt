@@ -1,6 +1,7 @@
 package com.shegs.artreasurehunt.ui
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -39,17 +40,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.ar.sceneform.rendering.ModelRenderable
 import com.shegs.artreasurehunt.R
 import io.github.sceneview.ar.ARScene
 import io.github.sceneview.ar.node.ArModelNode
@@ -57,19 +61,26 @@ import io.github.sceneview.ar.node.ArNode
 import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Scale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 
+@SuppressLint("RememberReturnType", "SuspiciousIndentation")
 @Composable
 fun ARCameraScreen() {
     val arModelNodes = remember { mutableStateOf<ArModelNode?>(null) }
     val nodes = remember { mutableListOf<ArNode>() }
+    val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
 
         ARScene(
             modifier = Modifier.fillMaxSize(),
             nodes = nodes,
             planeRenderer = true,
             onCreate = { arSceneView ->
+
                 // Apply AR configuration here
                 arModelNodes.value =
                     ArModelNode(arSceneView.engine, PlacementMode.BEST_AVAILABLE).apply {
@@ -80,9 +91,12 @@ fun ARCameraScreen() {
                         }
                         scale = Scale(0.1f)
                         position = Position(x = 0.0f, y = 0.0f, z = -2.0f)
+
                     }
+
                 nodes.add(arModelNodes.value!!)
             },
+
             onSessionCreate = { session ->
                 // Configure ARCore session
             },
@@ -95,6 +109,20 @@ fun ARCameraScreen() {
         )
 
         AnimatedColumn()
+
+    LaunchedEffect(true) {
+        // Load and set the 3D model (GLB) for the ArModelNode within a coroutine
+        val modelNode = arModelNodes.value
+        if (modelNode != null) {
+            withContext(Dispatchers.IO) {
+                modelNode.loadModelGlb(
+                    context = context,
+                    glbFileLocation = "file:///android_asset/treasure_chest.glb",
+                    autoAnimate = true
+                )
+            }
+        }
+    }
 }
 
 
@@ -105,8 +133,7 @@ fun AnimatedColumn() {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0x5000FF23)),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
