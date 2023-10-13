@@ -5,10 +5,13 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
+        android:name=".presentation.MapsApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -18,12 +21,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ARTreasureHunt"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC50NxbPFZtTQh_UTDw-PyJta-4pLER3bk" />
         <meta-data
             android:name="com.google.ar.core"
             android:value="required"
-            tools:replace="android:value"/>
+            tools:replace="android:value" />
+
+        <!--            android:name=".MainActivity"-->
         <activity
-            android:name=".MainActivity"
+        android:name="com.shegs.artreasurehunt.presentation.MapActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.ARTreasureHunt">
